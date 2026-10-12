@@ -482,6 +482,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--fonts", required=True)
     ap.add_argument("--out", default=os.path.join(ROOT, "video", "kuzukiri_reel.mp4"))
+    ap.add_argument("--music", help="BGM の音声ファイル (省略時は無音)")
+    ap.add_argument("--music-start", type=float, default=9.0, help="BGM の使い始め位置 (秒)")
     ap.add_argument("--stills", help="指定すると、この秒数のフレームだけ PNG 書き出し (カンマ区切り)")
     args = ap.parse_args()
 
@@ -495,10 +497,13 @@ def main():
 
     cmd = ["ffmpeg", "-y", "-loglevel", "error",
            "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
-           "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo",
+           *(["-ss", str(args.music_start), "-t", str(DUR), "-i", args.music] if args.music
+             else ["-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo"]),
+           *(["-af", f"afade=t=in:st=0:d=1.0,afade=t=out:st={DUR - 2.8}:d=2.8,"
+                     "loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000"] if args.music else []),
            "-c:v", "libx264", "-preset", "slow", "-b:v", "9M", "-maxrate", "12M", "-bufsize", "18M", "-pix_fmt", "yuv420p",
            "-profile:v", "high", "-movflags", "+faststart",
-           "-c:a", "aac", "-b:a", "128k", "-shortest", args.out]
+           "-c:a", "aac", "-b:a", "192k", "-shortest", args.out]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     n = int(DUR * FPS)
     for i in range(n):
