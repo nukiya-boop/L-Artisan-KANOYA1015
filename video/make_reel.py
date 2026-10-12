@@ -501,7 +501,7 @@ def main():
              else ["-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo"]),
            *(["-af", f"afade=t=in:st=0:d=1.0,afade=t=out:st={DUR - 2.8}:d=2.8,"
                      "loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000"] if args.music else []),
-           "-c:v", "libx264", "-preset", "slow", "-b:v", "9M", "-maxrate", "12M", "-bufsize", "18M", "-pix_fmt", "yuv420p",
+           "-c:v", "libx264", "-preset", "slow", "-b:v", "7.5M", "-maxrate", "10M", "-bufsize", "15M", "-pix_fmt", "yuv420p",
            "-profile:v", "high", "-movflags", "+faststart",
            "-c:a", "aac", "-b:a", "192k", "-shortest", args.out]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
